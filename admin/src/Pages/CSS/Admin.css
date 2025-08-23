@@ -1,0 +1,23 @@
+.admin{
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+/* Ensure the content area grows and provides breathing room */
+.admin > *:not(.sidebar) {
+    flex: 1 1 auto;
+    min-width: 0; /* prevent overflow on narrow viewports */
+}
+
+@media(max-width:1024px){
+    .admin{
+        gap: 12px;
+    }
+}
+@media(max-width:800px){
+    .admin{
+        flex-direction: column;
+        gap: 10px;
+    }
+}

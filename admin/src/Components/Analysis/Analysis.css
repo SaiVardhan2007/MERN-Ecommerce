@@ -1,0 +1,84 @@
+.analysis {
+  padding: 20px;
+  width: 100%;
+}
+
+.analysis-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.analysis-header h1 {
+  margin: 0;
+  color: #333;
+}
+
+.analysis-status {
+  color: #666;
+  font-size: 14px;
+}
+
+.analysis-error {
+  background: #ffebee;
+  color: #c62828;
+  padding: 10px 12px;
+  border-left: 4px solid #c62828;
+  border-radius: 4px;
+  max-width: 600px;
+}
+
+.analysis-chart-wrapper {
+  height: 420px; /* Gives the chart room to render while keeping layout responsive */
+  max-width: 900px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.analysis-chart-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .analysis {
+    padding: 16px;
+  }
+  .analysis-chart-wrapper {
+    max-width: 100%;
+    height: 380px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .analysis-chart-wrapper {
+    height: 360px;
+    padding: 12px;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 600px) {
+  .analysis {
+    padding: 12px;
+  }
+  .analysis-header h1 {
+    font-size: 22px;
+  }
+  .analysis-status {
+    font-size: 13px;
+  }
+  .analysis-error {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+  .analysis-chart-wrapper {
+    height: 300px;
+  }
+} 
