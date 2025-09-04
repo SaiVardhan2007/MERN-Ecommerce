@@ -3,11 +3,12 @@ import "./CartItems.css";
 import cross_icon from "../Assets/cart_cross_icon.png";
 import { ShopContext } from "../../Context/ShopContext";
 import { backend_url, currency } from "../../App";
+import CheckoutButton from "../Payment/CheckoutButton";   // ✅ Correct import path
 
 const CartItems = () => {
-  const {products} = useContext(ShopContext);
-  const {cartItems,removeFromCart,getTotalCartAmount} = useContext(ShopContext);
-  
+  const { products } = useContext(ShopContext);
+  const { cartItems, removeFromCart, getTotalCartAmount } = useContext(ShopContext);
+
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [discountedTotal, setDiscountedTotal] = useState(0);
@@ -32,7 +33,7 @@ const CartItems = () => {
     try {
       const response = await fetch(`${backend_url}/api/coupons`);
       const data = await response.json();
-      
+
       if (data.success) {
         setAvailableCoupons(data.coupons);
       } else {
@@ -66,7 +67,7 @@ const CartItems = () => {
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         setAppliedCoupon(data.coupon);
         alert(`Coupon applied successfully! You saved ${currency}${data.coupon.discountAmount}`);
@@ -90,14 +91,14 @@ const CartItems = () => {
   };
 
   const formatCouponDescription = (coupon) => {
-    const discountText = coupon.discountType === 'percentage' 
-      ? `${coupon.discountValue}% off` 
+    const discountText = coupon.discountType === 'percentage'
+      ? `${coupon.discountValue}% off`
       : `${currency}${coupon.discountValue} off`;
-    
-    const minCartText = coupon.minCartValue > 0 
-      ? ` (Min. cart value: ${currency}${coupon.minCartValue})` 
+
+    const minCartText = coupon.minCartValue > 0
+      ? ` (Min. cart value: ${currency}${coupon.minCartValue})`
       : '';
-    
+
     return `${discountText}${minCartText}`;
   };
 
@@ -112,25 +113,30 @@ const CartItems = () => {
         <p>Remove</p>
       </div>
       <hr />
-      {products.map((e)=>{
-
-        if(cartItems[e.id]>0)
-        {
-          return  <div>
-                    <div className="cartitems-format-main cartitems-format">
-                      <img className="cartitems-product-icon" src={backend_url+e.image} alt="" />
-                      <p cartitems-product-title>{e.name}</p>
-                      <p>{currency}{e.new_price}</p>
-                      <button className="cartitems-quantity">{cartItems[e.id]}</button>
-                      <p>{currency}{e.new_price*cartItems[e.id]}</p>
-                      <img onClick={()=>{removeFromCart(e.id)}} className="cartitems-remove-icon" src={cross_icon} alt="" />
-                    </div>
-                     <hr />
-                  </div>;
+      {products.map((e) => {
+        if (cartItems[e.id] > 0) {
+          return (
+            <div key={e.id}>
+              <div className="cartitems-format-main cartitems-format">
+                <img className="cartitems-product-icon" src={backend_url + e.image} alt="" />
+                <p cartitems-product-title>{e.name}</p>
+                <p>{currency}{e.new_price}</p>
+                <button className="cartitems-quantity">{cartItems[e.id]}</button>
+                <p>{currency}{e.new_price * cartItems[e.id]}</p>
+                <img
+                  onClick={() => { removeFromCart(e.id); }}
+                  className="cartitems-remove-icon"
+                  src={cross_icon}
+                  alt=""
+                />
+              </div>
+              <hr />
+            </div>
+          );
         }
         return null;
       })}
-      
+
       <div className="cartitems-down">
         <div className="cartitems-total">
           <h1>Cart Totals</h1>
@@ -159,18 +165,22 @@ const CartItems = () => {
               <h3>{currency}{discountedTotal}</h3>
             </div>
           </div>
-          <button>PROCEED TO CHECKOUT</button>
+
+          {/* ✅ Razorpay Checkout */}
+          {discountedTotal > 0 && (
+            <CheckoutButton amount={discountedTotal} />
+          )}
         </div>
-        
+
         <div className="cartitems-promocode">
           <p>Available Coupons</p>
           {error && <p className="error-message">{error}</p>}
-          
+
           {appliedCoupon ? (
             <div className="applied-coupon">
               <p>Applied Coupon: <strong>{appliedCoupon.code}</strong></p>
               <p>Discount: {currency}{appliedCoupon.discountAmount}</p>
-              <button 
+              <button
                 onClick={removeCoupon}
                 className="remove-coupon-btn"
                 disabled={loading}
@@ -194,7 +204,7 @@ const CartItems = () => {
                         </p>
                       )}
                     </div>
-                    <button 
+                    <button
                       onClick={() => applyCoupon(coupon.code)}
                       className="apply-coupon-btn"
                       disabled={loading || originalTotal < coupon.minCartValue}

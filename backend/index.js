@@ -6,6 +6,9 @@ const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
 const port = process.env.PORT || 4000;
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+require("dotenv").config();
 
 app.use(express.json());
 app.use(cors());
@@ -401,6 +404,52 @@ app.post("/api/coupons/apply", async (req, res) => {
     res.status(500).json({ success: false, message: "Error applying coupon" });
   }
 });
+
+app.post("/api/payment/checkout", async (req, res) => {
+  try {
+    const instance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+
+    const options = {
+      amount: Number(req.body.amount * 100), // convert to paise
+      currency: "INR",
+    };
+
+    const order = await instance.orders.create(options);
+
+    res.status(200).json({ success: true, order });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post("/api/payment/paymentverification", async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest("hex");
+
+    const isAuthentic = expectedSignature === razorpay_signature;
+
+    if (isAuthentic) {
+      res.json({ success: true, paymentId: razorpay_payment_id });
+    } else {
+      res.status(400).json({ success: false, message: "Payment verification failed" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 
 app.listen(port, (error) => {
   if (!error) console.log("Server Running on port " + port);
