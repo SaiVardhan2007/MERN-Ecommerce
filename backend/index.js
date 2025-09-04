@@ -13,8 +13,7 @@ require("dotenv").config();
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect("mongodb+srv://polampallisaivardhan142:kavyasai.09@cluster0.xuiep5g.mongodb.net/e-commerce");
-
+mongoose.connect(process.env.MONGO_URI);
 const storage = multer.diskStorage({
   destination: './upload/images',
   filename: (req, file, cb) => {
