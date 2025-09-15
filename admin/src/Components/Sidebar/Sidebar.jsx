@@ -31,6 +31,12 @@ const Sidebar = () => {
           <p>Analysis</p>
         </div>
       </Link>
+      <Link to='/payments' style={{ textDecoration: 'none' }}>
+        <div className="sidebar-item">
+          <img src={list_product_icon} alt="" />
+          <p>Payments</p>
+        </div>
+      </Link>
       
     </div>
   )

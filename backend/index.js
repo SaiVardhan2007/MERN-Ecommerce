@@ -12,16 +12,15 @@ require("dotenv").config();
 
 const PORT = process.env.PORT || 4000;
 const MONGO_URI = process.env.MONGO_URI;
-const JWT_SECRET = process.env.JWT_SECRET || "secret_ecom"; // fallback for local dev
+const JWT_SECRET = process.env.JWT_SECRET || "secret_ecom"; 
 
 app.use(express.json());
 app.use(cors({
-  origin: "*", // in production replace "*" with your frontend URL (e.g. https://your-frontend.vercel.app)
+  origin: "*", 
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
 
-// Connect to MongoDB Atlas (with basic logging)
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -31,7 +30,6 @@ mongoose.connect(MONGO_URI, {
   console.error("MongoDB connection error:", err);
 });
 
-// Multer storage config
 const uploadDir = path.join(__dirname, "upload/images");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -53,10 +51,8 @@ app.post("/upload", upload.single('product'), (req, res) => {
   });
 });
 
-// Serve images (note: on Render ephemeral filesystem, consider S3/Cloudinary for persistence)
 app.use('/images', express.static(path.join(__dirname, "upload/images")));
 
-// Auth middleware
 const fetchuser = async (req, res, next) => {
   const token = req.header("auth-token");
   if (!token) {
@@ -71,7 +67,6 @@ const fetchuser = async (req, res, next) => {
   }
 };
 
-// Models
 const Users = mongoose.model("Users", {
   name: { type: String },
   email: { type: String, unique: true },
@@ -92,12 +87,10 @@ const Product = mongoose.model("Product", {
   avilable: { type: Boolean, default: true },
 });
 
-// Root
 app.get("/", (req, res) => {
   res.send("Root");
 });
 
-// AUTH ROUTES
 app.post('/login', async (req, res) => {
   try {
     console.log("Login");
@@ -147,6 +140,16 @@ app.post('/signup', async (req, res) => {
     res.json({ success, token });
   } catch (err) {
     console.error("Signup error:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+app.post('/getuser', fetchuser, async (req, res) => {
+  try {
+    let user = await Users.findById(req.user.id).select('-password');
+    res.json(user);
+  } catch (err) {
+    console.error("getuser error:", err);
     res.status(500).json({ success: false, error: "Server error" });
   }
 });
@@ -211,7 +214,6 @@ app.post("/relatedproducts", async (req, res) => {
   }
 });
 
-// CART ROUTES
 app.post('/addtocart', fetchuser, async (req, res) => {
   try {
     console.log("Add Cart");
@@ -251,7 +253,6 @@ app.post('/getcart', fetchuser, async (req, res) => {
   }
 });
 
-// PRODUCT CRUD
 app.post("/addproduct", async (req, res) => {
   try {
     let products = await Product.find({});
@@ -290,7 +291,6 @@ app.post("/removeproduct", async (req, res) => {
   }
 });
 
-// COUPON model & routes (unchanged logic)
 const Coupon = mongoose.model("Coupon", {
   code: { type: String, required: true, unique: true },
   discountType: { type: String, enum: ['percentage', 'fixed'], required: true },
@@ -301,7 +301,16 @@ const Coupon = mongoose.model("Coupon", {
   date: { type: Date, default: Date.now },
 });
 
-// Coupon admin and apply routes remain the same (kept for brevity)
+const Payment = mongoose.model("Payment", {
+  email: { type: String, required: true },
+  amount: { type: Number, required: true },
+  razorpay_order_id: { type: String, required: true },
+  razorpay_payment_id: { type: String, required: true },
+  razorpay_signature: { type: String, required: true },
+  status: { type: String, default: 'completed' },
+  date: { type: Date, default: Date.now },
+});
+
 app.post("/api/coupons/admin", async (req, res) => {
   try {
     const { code, discountType, discountValue, minCartValue, isActive, expiryDate } = req.body;
@@ -462,7 +471,17 @@ app.post("/api/coupons/apply", async (req, res) => {
   }
 });
 
-// PAYMENT - Razorpay
+app.get("/allpayments", async (req, res) => {
+  try {
+    let payments = await Payment.find({}).sort({ date: -1 });
+    console.log("All Payments");
+    res.send(payments);
+  } catch (err) {
+    console.error("allpayments error:", err);
+    res.status(500).send([]);
+  }
+});
+
 app.post("/api/payment/checkout", async (req, res) => {
   try {
     const instance = new Razorpay({
@@ -470,7 +489,7 @@ app.post("/api/payment/checkout", async (req, res) => {
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
     const options = {
-      amount: Number(req.body.amount * 100), // convert to paise
+      amount: Number(req.body.amount * 100), 
       currency: "INR",
     };
     const order = await instance.orders.create(options);
@@ -483,7 +502,7 @@ app.post("/api/payment/checkout", async (req, res) => {
 
 app.post("/api/payment/paymentverification", async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, email, amount } = req.body;
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -491,6 +510,16 @@ app.post("/api/payment/paymentverification", async (req, res) => {
       .digest("hex");
     const isAuthentic = expectedSignature === razorpay_signature;
     if (isAuthentic) {
+      const payment = new Payment({
+        email: email || 'polampallisaivardhan1423@gmail.com',
+        amount: amount || 0,
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        status: 'completed'
+      });
+      await payment.save();
+      console.log("Payment Saved");
       res.json({ success: true, paymentId: razorpay_payment_id });
     } else {
       res.status(400).json({ success: false, message: "Payment verification failed" });
@@ -501,7 +530,7 @@ app.post("/api/payment/paymentverification", async (req, res) => {
   }
 });
 
-// Start server
+
 app.listen(PORT, (error) => {
   if (!error) console.log("Server Running on port " + PORT);
   else console.log("Error : ", error);

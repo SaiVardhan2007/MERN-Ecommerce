@@ -6,6 +6,7 @@ import { Route, Routes } from "react-router-dom";
 import ListProduct from "../Components/ListProduct/ListProduct";
 import Coupons from "../Components/Coupons/Coupons";
 import Analysis from "../Components/Analysis/Analysis";
+import Payments from "../Components/Payments/Payments";
 
 const Admin = () => {
 
@@ -17,6 +18,7 @@ const Admin = () => {
         <Route path="/listproduct" element={<ListProduct />} />
         <Route path="/coupons" element={<Coupons />} />
         <Route path="/analysis" element={<Analysis />} />
+        <Route path="/payments" element={<Payments />} />
       </Routes>
     </div>
   );

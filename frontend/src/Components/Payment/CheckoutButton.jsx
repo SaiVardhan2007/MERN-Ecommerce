@@ -3,19 +3,40 @@ import axios from "axios";
 function CheckoutButton({ amount }) {
   const handlePayment = async () => {
     try {
-      // Step 1: Create Razorpay order from backend
       const { data: { order } } = await axios.post("http://localhost:4000/api/payment/checkout", { amount });
 
-      // Step 2: Setup options for Razorpay popup
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY, // frontend key
+        key: process.env.REACT_APP_RAZORPAY_KEY, 
         amount: order.amount,
         currency: "INR",
         name: "E-Commerce Store",
         description: "Order Payment",
         order_id: order.id,
         handler: async (response) => {
-        await axios.post("http://localhost:4000/api/payment/paymentverification", response);
+        let userEmail = 'polampallisaivardhan1423@gmail.com';
+        const authToken = localStorage.getItem('auth-token');
+        
+        if (authToken) {
+          try {
+            const userResponse = await axios.post("http://localhost:4000/getuser", {}, {
+              headers: {
+                'auth-token': authToken,
+                'Content-Type': 'application/json'
+              }
+            });
+            if (userResponse.data && userResponse.data.email) {
+              userEmail = userResponse.data.email;
+            }
+          } catch (error) {
+            console.error('Error fetching user email:', error);
+          }
+        }
+        
+        await axios.post("http://localhost:4000/api/payment/paymentverification", {
+          ...response,
+          email: userEmail,
+          amount: amount
+        });
         alert("Payment Successful!");
         },
 

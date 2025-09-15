@@ -1,0 +1,51 @@
+/* Using the same styles as ListProduct for consistency */
+.listproduct {
+  flex: 1;
+  background-color: #fbfbfb;
+  border-radius: 6px;
+  margin: 10px 20px;
+  padding: 30px;
+}
+
+.listproduct h1 {
+  color: #454545;
+  font-size: 50px;
+  font-weight: 600;
+}
+
+.listproduct-format-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 1fr 1fr;
+  gap: 10px;
+  padding: 20px 0px;
+  color: #454545;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.listproduct-allproducts {
+  max-height: 77vh;
+  overflow: auto;
+}
+
+.listproduct-format {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 1fr 1fr;
+  gap: 10px;
+  padding: 15px 0px;
+  color: #454545;
+  font-size: 13px;
+  align-items: center;
+}
+
+.cartitems-product-title {
+  color: #3d3d3d;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.listproduct hr {
+  border: none;
+  background: #c9c9c9;
+  height: 1px;
+}
