@@ -1,4 +1,3 @@
-// backend/index.js
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -21,14 +20,9 @@ app.use(cors({
   credentials: true
 }));
 
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log("MongoDB connected");
-}).catch((err) => {
-  console.error("MongoDB connection error:", err);
-});
+mongoose.connect(MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 const uploadDir = path.join(__dirname, "upload/images");
 const storage = multer.diskStorage({
@@ -57,7 +51,7 @@ const fetchuser = async (req, res, next) => {
   const token = req.header("auth-token");
   if (!token) {
     return res.status(401).send({ errors: "Please authenticate using a valid token" });
-  }
+  } 
   try {
     const data = jwt.verify(token, JWT_SECRET);
     req.user = data.user;
@@ -97,7 +91,7 @@ app.post('/login', async (req, res) => {
     let success = false;
     let user = await Users.findOne({ email: req.body.email });
     if (user) {
-      const passCompare = req.body.password === user.password; // NOTE: consider bcrypt hashing in future
+      const passCompare = req.body.password === user.password; 
       if (passCompare) {
         const data = { user: { id: user.id } };
         success = true;
@@ -154,7 +148,6 @@ app.post('/getuser', fetchuser, async (req, res) => {
   }
 });
 
-// PRODUCTS - keep existing endpoints and add /api/products for frontend
 app.get("/allproducts", async (req, res) => {
   try {
     let products = await Product.find({});
@@ -166,7 +159,6 @@ app.get("/allproducts", async (req, res) => {
   }
 });
 
-// New route expected by frontend
 app.get("/api/products", async (req, res) => {
   try {
     const products = await Product.find({});

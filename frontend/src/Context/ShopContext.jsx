@@ -21,6 +21,7 @@ const ShopContextProvider = (props) => {
     fetch(`${backend_url}/allproducts`)
       .then((res) => res.json())
       .then((data) => setProducts(data))
+      .catch((error) => console.error("Failed to fetch products:", error));
 
     if (localStorage.getItem("auth-token")) {
       fetch(`${backend_url}/getcart`, {
@@ -30,7 +31,7 @@ const ShopContextProvider = (props) => {
           'auth-token': `${localStorage.getItem("auth-token")}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(),
+        body: JSON.stringify({}),
       })
         .then((resp) => resp.json())
         .then((data) => { setCartItems(data) });
@@ -44,7 +45,7 @@ const ShopContextProvider = (props) => {
         try {
           let itemInfo = products.find((product) => product.id === Number(item));
           totalAmount += cartItems[item] * itemInfo.new_price;
-        } catch (error) {}
+        } catch (error) { }
       }
     }
     return totalAmount;
@@ -56,8 +57,8 @@ const ShopContextProvider = (props) => {
       if (cartItems[item] > 0) {
         try {
           let itemInfo = products.find((product) => product.id === Number(item));
-          totalItem += itemInfo ? cartItems[item] : 0 ;
-        } catch (error) {}
+          totalItem += itemInfo ? cartItems[item] : 0;
+        } catch (error) { }
       }
     }
     return totalItem;
