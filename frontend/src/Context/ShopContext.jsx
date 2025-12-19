@@ -18,10 +18,14 @@ const ShopContextProvider = (props) => {
   const [cartItems, setCartItems] = useState(getDefaultCart());
 
   useEffect(() => {
+    console.log("Fetching products from (Frontend):", `${backend_url}/allproducts`);
     fetch(`${backend_url}/allproducts`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) { throw new Error(`HTTP error! status: ${res.status}`); }
+        return res.json();
+      })
       .then((data) => setProducts(data))
-      .catch((error) => console.error("Failed to fetch products:", error));
+      .catch((error) => console.error("Failed to fetch products (Frontend):", error));
 
     if (localStorage.getItem("auth-token")) {
       fetch(`${backend_url}/getcart`, {
