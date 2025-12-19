@@ -11,7 +11,7 @@ import kid_banner from "./Components/Assets/banner_kids.png";
 import LoginSignup from "./Pages/LoginSignup";
 
 export const backend_url = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-console.log("Frontend Backend URL:", backend_url);
+// console.log("Frontend Backend URL:", backend_url);
 export const currency = '₹';
 
 function App() {

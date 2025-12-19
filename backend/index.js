@@ -15,12 +15,21 @@ const JWT_SECRET = process.env.JWT_SECRET || "secret_ecom";
 
 app.use(express.json());
 const allowedOrigins = [
-  process.env.FRONTEND_URL || "http://localhost:5173"
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://localhost:3003",
+  "http://localhost:3004",
+  "http://localhost:3005",
+  "http://localhost:5173",
+  "http://localhost:4000",
+  process.env.FRONTEND_URL
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    // Allow requests with no origin (same-origin requests, curl, etc.)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
