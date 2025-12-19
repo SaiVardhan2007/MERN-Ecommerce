@@ -8,8 +8,12 @@ const ListProduct = () => {
 
   const fetchInfo = () => {
     fetch(`${backend_url}/allproducts`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) { throw new Error(`HTTP error! status: ${res.status}`); }
+        return res.json();
+      })
       .then((data) => setAllProducts(data))
+      .catch((err) => console.error("Failed to fetch products:", err));
   }
 
   useEffect(() => {

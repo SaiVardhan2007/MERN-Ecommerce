@@ -11,11 +11,26 @@ require("dotenv").config();
 
 const PORT = process.env.PORT || 4000;
 const MONGO_URI = process.env.MONGO_URI;
-const JWT_SECRET = process.env.JWT_SECRET || "secret_ecom"; 
+const JWT_SECRET = process.env.JWT_SECRET || "secret_ecom";
 
 app.use(express.json());
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://localhost:3005",
+  "http://localhost:5173",
+  "http://localhost:4000"
+];
+
 app.use(cors({
-  origin: "*", 
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
@@ -51,7 +66,7 @@ const fetchuser = async (req, res, next) => {
   const token = req.header("auth-token");
   if (!token) {
     return res.status(401).send({ errors: "Please authenticate using a valid token" });
-  } 
+  }
   try {
     const data = jwt.verify(token, JWT_SECRET);
     req.user = data.user;
@@ -91,7 +106,7 @@ app.post('/login', async (req, res) => {
     let success = false;
     let user = await Users.findOne({ email: req.body.email });
     if (user) {
-      const passCompare = req.body.password === user.password; 
+      const passCompare = req.body.password === user.password;
       if (passCompare) {
         const data = { user: { id: user.id } };
         success = true;
@@ -428,9 +443,9 @@ app.post("/api/coupons/apply", async (req, res) => {
       return res.status(400).json({ success: false, message: "Coupon has expired" });
     }
     if (cartTotal < coupon.minCartValue) {
-      return res.status(400).json({ 
-        success: false, 
-        message: `Minimum cart value of ${coupon.minCartValue} required` 
+      return res.status(400).json({
+        success: false,
+        message: `Minimum cart value of ${coupon.minCartValue} required`
       });
     }
     let discountAmount = 0;
@@ -481,7 +496,7 @@ app.post("/api/payment/checkout", async (req, res) => {
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
     const options = {
-      amount: Number(req.body.amount * 100), 
+      amount: Number(req.body.amount * 100),
       currency: "INR",
     };
     const order = await instance.orders.create(options);
